@@ -42,7 +42,7 @@
 <meta property="og:locale" content="zh-cn">
 <meta property="og:image" content="http://yoursite.com/img/JVM.png">
 <meta property="og:image" content="http://yoursite.com/img/run.png">
-<meta property="og:updated_time" content="2017-12-12T06:40:36.000Z">
+<meta property="og:updated_time" content="2017-12-13T03:38:16.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="JVM">
 <meta name="twitter:description" content="jvm基本结构图  类加载子系统负责从文件系统或者网络中加载Class信息，加载的类信息存放于一块称为方法区的内存空间。除了类的信息外，方法区中可能还会存放运行时常量池信息，包括字符串字面量和数字常量（这部分常量信息是Class文件中常量池部分的内存映射）。 java堆在虚拟机启动的时候建立，它是java程序最主要的内存工作区域。几乎所有的java对象实例都存放在java堆中。堆空间是所有线程共享">
@@ -146,6 +146,55 @@
 <ol>
 <li>方法区：用于存储已被虚拟机加载的类信息、常量、静态变量、即时编译器编译后的代码等数据</li>
 <li>堆区：存放对象实例，几乎所有的对象实例都在这里分配内存 类的信息被存储在方法区后，jvm虚拟机又会堆区创建一个java.lang.Class对象</li>
+</ol>
+<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><ol>
+<li>支持动态扩展 支持垃圾回收</li>
+</ol>
+<h3 id="类信息"><a href="#类信息" class="headerlink" title="类信息"></a>类信息</h3><ol>
+<li>类的完整有效名 父类完整有效名 修饰符</li>
+<li>常量池Filed Method信息 static变量</li>
+</ol>
+<h3 id="JVM-内存溢出"><a href="#JVM-内存溢出" class="headerlink" title="JVM 内存溢出"></a>JVM 内存溢出</h3><ol>
+<li>内存泄漏是使用对象不当引起内存无法释放可用内存减少。</li>
+<li>堆溢出 XX:+HeapDumpOnOutofMemoryError 程序崩溃产生快照</li>
+<li>栈溢出 调用方法的时候，会在栈中入栈一个栈帧，如果当前栈的容量不足，就会发生栈溢出StackOverFlowError</li>
+<li>运行时常量池溢出 运行时常量池移动到了堆中</li>
+<li>方法区溢出 cglib创建大量代理类</li>
+</ol>
+<h3 id="jvm参数"><a href="#jvm参数" class="headerlink" title="jvm参数"></a>jvm参数</h3><ul>
+<li>Xms 堆最小容量(heap min size)</li>
+<li>Xmx 堆最大容量(heap max size)</li>
+<li>Xss 栈容量(stack size)</li>
+<li>XX:PermSize=size 永生代最小容量</li>
+<li>XX:MaxPermSize=size 永生代最大容量</li>
+<li>XX:+HeapDumpOnOutofMemoryError 程序崩溃产生快照</li>
+</ul>
+<h3 id="堆内内存-堆外内存"><a href="#堆内内存-堆外内存" class="headerlink" title="堆内内存 堆外内存"></a>堆内内存 堆外内存</h3><ol>
+<li>一般情况下，Java中分配的非空对象都是由Java虚拟机的垃圾收集器管理的，也称为堆内内存（on-heap memory）。虚拟机会定期对垃圾内存进行回收，在某些特定的时间点，它会进行一次彻底的回收（full gc）</li>
+<li>堆外内存意味着把内存对象分配在Java虚拟机的堆以外的内存，这些内存直接受操作系统管理（而不是虚拟机）。这样做的结果就是能保持一个较小的堆，以减少垃圾收集对应用的影响。</li>
+<li>内存池主要用于两类对象。第一类是生命周期较短，且结构简单的对象，在内存池中重复利用这些对象能增加CPU缓存的命中率，从而提高性能。第二种情况是加载含有大量重复对象的大片数据，此时使用内存池能减少垃圾回收的时间。</li>
+<li>堆外内存 适用生命周期中等或较长的对象<ol>
+<li>优点 改进性能 确定性</li>
+<li>缺点 数据结构不直观 需要串行化</li>
+</ol>
+</li>
+</ol>
+<h3 id="新生代"><a href="#新生代" class="headerlink" title="新生代"></a>新生代</h3><ol>
+<li>优化GC性能 新生代的GC 使用复制算法</li>
+</ol>
+<h3 id="线程状态"><a href="#线程状态" class="headerlink" title="线程状态"></a>线程状态</h3><ol>
+<li>new、runnable、running、waiting、timed_waiting、blocked、dead</li>
+<li>top 可以通过top命令查看各个进程的cpu使用情况</li>
+<li>通过top -Hp 23344可以查看该进程下各个线程的cpu使用情况；</li>
+<li>在dump文件中找到nid 为 线程的pid 16进制数据</li>
+<li>打印出某个java进程（使用pid）内存内的，所有‘对象’的情况</li>
+</ol>
+<h3 id="垃圾回收器的选择"><a href="#垃圾回收器的选择" class="headerlink" title="垃圾回收器的选择"></a>垃圾回收器的选择</h3><p>串行处理器： 可以使用-XX:+UseSerialGC打开。<br>–适用情况：数据量比较小（100M左右）；单处理器下并且对响应时间无要求的应用。<br>–缺点：只能用于小型应用<br>并行处理器： -XX:+UseParallelGC.打开。<br>–适用情况：“对吞吐量有高要求”，多CPU、对应用响应时间无要求的中、大型应用。举例：后台处理、科学计算。<br>–缺点：垃圾收集过程中应用响应时间可能加长<br>并发处理器：XX:+UseConcMarkSweepGC打开。<br>–适用情况：“对响应时间有高要求”，多CPU、对应用响应时间有较高要求的中、大型应用。举例：Web服务器/应用服务器、电信交换、集成开发环境。</p>
+<h3 id="垃圾回收算法"><a href="#垃圾回收算法" class="headerlink" title="垃圾回收算法"></a>垃圾回收算法</h3><ol>
+<li>引用计数</li>
+<li>复制</li>
+<li>标记清除</li>
+<li>标记整理</li>
 </ol>
 
             </div>
